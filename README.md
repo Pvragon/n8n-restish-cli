@@ -173,6 +173,51 @@ restish n8n get-data-table-rows DATA_TABLE_ID
 echo '{"data": [{"column1": "value1"}]}' | restish n8n insert-data-table-rows DATA_TABLE_ID
 ```
 
+## Error handling template
+
+The repo includes `templates/webhook-with-error-handling.json` — a starter workflow with built-in error handling. Instead of n8n's default behavior (swallowing errors and returning `{"message": "Error in workflow"}`), this template returns structured error details in the HTTP response.
+
+**How it works:**
+
+The Webhook node uses `responseMode: "responseNode"`, which delegates the HTTP response to dedicated Respond to Webhook nodes. The work node has `onError: "continueErrorOutput"`, which routes errors to a second output instead of crashing:
+
+```
+Webhook → Your Work Here
+              ├── output 0 (success) → Success Response (HTTP 200)
+              └── output 1 (error)   → Error Response (HTTP 500)
+```
+
+**Success response:**
+```json
+{
+  "success": true,
+  "data": { "result": "...", "received": {} },
+  "timestamp": "2026-03-24T01:39:14.199-07:00"
+}
+```
+
+**Error response:**
+```json
+{
+  "success": false,
+  "error": "ClickUp API returned 403 Forbidden — credential expired [line 3]",
+  "workflow": "My Workflow",
+  "timestamp": "2026-03-24T01:39:14.370-07:00"
+}
+```
+
+**Usage:**
+
+```bash
+# Copy the template
+cp templates/webhook-with-error-handling.json my-workflow.json
+
+# Edit: set your webhook path, replace "Your Work Here" with actual logic
+# Then deploy:
+restish n8n post-api-v1-workflows <my-workflow.json
+restish n8n post-api-v1-workflows-id-activate WORKFLOW_ID
+```
+
 ## How it works
 
 Restish is a generic REST client that reads OpenAPI specs. This repo bundles n8n's official OpenAPI v3 spec (from `n8n-io/n8n` on GitHub), pre-resolved into a single JSON file so Restish can load it without chasing `$ref` links across multiple YAML files.

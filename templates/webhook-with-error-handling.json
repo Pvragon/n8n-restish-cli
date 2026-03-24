@@ -1,0 +1,92 @@
+{
+  "name": "TEMPLATE — Webhook with Error Handling",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "YOUR-WEBHOOK-PATH",
+        "httpMethod": "POST",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "tmpl-0001-0001-0001-000000000001",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 0],
+      "webhookId": "tmpl-webhook-id"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================\n// YOUR WORK GOES HERE\n// ============================================\n// Replace this node with your actual logic,\n// or keep it as a Code node and edit the JS.\n//\n// The webhook payload is available at:\n//   $input.first().json.body    (POST body)\n//   $input.first().json.query   (query params)\n//   $input.first().json.headers (request headers)\n//\n// IMPORTANT: This node has onError: continueErrorOutput\n// which means errors route to the Error Response path\n// instead of crashing the workflow.\n// ============================================\n\nconst input = $input.first().json;\n\nreturn [{\n  json: {\n    result: 'Replace this with your actual logic',\n    received: input.body || {}\n  }\n}];"
+      },
+      "id": "tmpl-0001-0001-0001-000000000002",
+      "name": "Your Work Here",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [300, 0],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { success: true, data: $json, timestamp: $now.toISO() } }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "tmpl-0001-0001-0001-000000000003",
+      "name": "Success Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [600, -100]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { success: false, error: $json.error || 'Unknown error', workflow: $workflow.name, timestamp: $now.toISO() } }}",
+        "options": {
+          "responseCode": 500
+        }
+      },
+      "id": "tmpl-0001-0001-0001-000000000004",
+      "name": "Error Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [600, 150]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Your Work Here",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Your Work Here": {
+      "main": [
+        [
+          {
+            "node": "Success Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
