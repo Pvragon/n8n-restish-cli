@@ -1,0 +1,16 @@
+{
+  "$schema": "https://rest.sh/schemas/apis.json",
+  "n8n": {
+    "base": "https://YOUR_N8N_INSTANCE/api/v1",
+    "spec_files": [
+      "/home/YOUR_USERNAME/.config/restish/n8n-openapi.json"
+    ],
+    "profiles": {
+      "default": {
+        "headers": {
+          "X-N8N-API-KEY": "YOUR_API_KEY_HERE"
+        }
+      }
+    }
+  }
+}
